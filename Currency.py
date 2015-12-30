@@ -1,30 +1,44 @@
 # Author Geoff Miller
 # Date: 12-26-15
 # Currency Problem
-
-
-from Errors import ErrorCodes
-from Errors import ErrorMessages
 import operator
+
+from Control import Control
+from Errors import ErrorCodes
 
 
 class Currency:
     """
     Defines a currency set
     """
-    # number of solutions
+    # num of solutions
     num_solutions = 0
-    solutions = {}
     # currency names
     names = {}
     # currency values
     values = {}
-    # adjusted currency values.
+    # number of coins to hit target
     r_values = {}
     # list of defined currency names sorted by value
     s_values = []
     # bool for keeping track if the amounts need adjusted
     is_adjusted = False
+    max_name_len = 0
+
+    @staticmethod
+    def use_default_currency():
+        Control.target = 100
+        Currency.define("quarter", 25)
+        Currency.define("dime", 10)
+        Currency.define("nickle", 5)
+        Currency.define("penny", 1)
+        Currency.process_defined_values()
+
+        # Control.target = 1500
+        # Currency.define("coin", 1000)
+        # Currency.define("arrowhead", 500)
+        # Currency.define("button", 10)
+        # Currency.process_defined_values()
 
     @classmethod
     def get_coin_name(cls, val):
@@ -57,6 +71,48 @@ class Currency:
         return ErrorCodes.R_SUCCESS
 
     @classmethod
+    def define_by_list(cls, list):
+        target = None
+        nums = []
+        r_nums = []
+        vals = []
+        names = []
+        has_float = False
+        for coin in list:
+            if isinstance(coin[1], float):
+                has_float = True
+                break
+        if has_float:
+            for coin in list:
+                if has_float:
+                    nums.append(float(coin[1]))
+                else:
+                    nums.append(int(coin[1]))
+                names.append(str(coin[0]))
+        else:
+            for coin in list:
+                nums.append(float(coin[1]))
+                names.append(str(coin[0]))
+
+        target = max(nums)
+        r_nums = nums[:]
+
+        while has_float:
+            has_float = False
+            target *= 10
+            for coin in r_nums:
+                coin *= 10
+                if not has_float:
+                    has_float = not coin.is_integer()
+
+        Control.target = target
+
+        for i, coin in enumerate(r_nums):
+            if r_nums[i] == 0:
+                Control.error_exit(ErrorCodes.E_ZERO)
+            Currency.define(names[i], (target / r_nums[i]))
+
+    @classmethod
     def process_defined_values(cls):
         """
         checks for values that are not integers and adjusts values
@@ -79,3 +135,13 @@ class Currency:
         :return: return the value of the nth valued coin
         """
         return cls.s_values[val][1]
+
+    @classmethod
+    def printer(cls, list):
+        output = ""
+        for coin in list:
+            plural = "s"
+            if coin[0] == 1:
+                plural = ""
+            output += " | %s %-s%+s" % (str(coin[0]).ljust(3), str(coin[1]), plural.ljust(2))
+        return output

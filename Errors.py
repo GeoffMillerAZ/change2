@@ -14,6 +14,7 @@ class ErrorCodes(IntEnum):
     E_FAILURE = 1
     E_USER_EXIT = 2
     E_UNEXPECTED_TERMINATION = 3
+    E_ZERO = 4
 
 
 class ErrorMessages:
@@ -24,7 +25,8 @@ class ErrorMessages:
         "General success",
         "General failure",
         "User initiated exit",
-        "An error has caused the program to exit"
+        "An error has caused the program to exit",
+        "Zero is not a valid value for currency value!"
     ]
 
     @classmethod
